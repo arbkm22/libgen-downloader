@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
+# Title filter, removes the ISBN no. from title
 def titleFilter(title):
     title = title.split()
     while (len(title)>1):
@@ -28,22 +29,19 @@ if (len(tableRow)>1):
         tableContent = tableRow[tr].find_all("td")
         bookId = tableContent[0].text
         title = tableContent[2].find("a", id=bookId).text
-        #title = ''.join([i for i in title if not i.isdigit()])
         title = titleFilter(title)
         author = tableContent[1].text.strip()
         link = tableContent[9].find("a")["href"]
         size = tableContent[7].text.strip()
         fileType = tableContent[8].text.strip()
         lang = tableContent[6].text.strip()
-
-        print(title)
-
-        """ print(f
+        # printing the details
+        print(f"""
             [{tr}]
             Title:      {title}
             Author:     {author}
             Language:   {lang}      Size:   {size}      Extension:   {fileType}
             Link:       {link}
-            ) """
+            """)
 else:
     print("No Book Found")
