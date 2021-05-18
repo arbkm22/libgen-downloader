@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 from os import system, name
+import os, sys
+from tqdm import tqdm
+from pathlib import Path
 
 def clear():
     if name == "nt":
@@ -28,6 +31,26 @@ def dlLinkGrabber(link):
     dlLink = dlSource.find("a")["href"]
     return dlLink
 
+def downloader(link, fileName):
+    homePath = Path.home()
+    subPath = "tmp"
+    fileSize = int(requests.head(link).headers["Content-Length"])
+    os.makedirs(os.path.join(homePath, subPath), exist_ok=True)
+    dlPath = os.path.join(homePath, subPath, fileName)
+    chunkSize = 1024
+    with requests.get(link, stream=True) as r, open(dlPath, "wb") as f, tqdm(
+        unit = "B",  # unit string to be displayed.
+        unit_scale = True,  # let tqdm to determine the scale in kilo, mega..etc.
+        unit_divisor = 1024,  # is used when unit_scale is true
+        total = fileSize,  # the total iteration.
+        file = sys.stdout,  # default goes to stderr, this is the display on console.
+        desc = fileName  # prefix to be displayed on progress bar.
+) as progress:
+        for chunk in r.iter_content(chunk_size=chunkSize):
+            dataSize = f.write(chunk)
+            progress.update(dataSize)
+    print(f"File downloaded at {dlPath}")
+
 print("Enter the name of the book: ", end='')
 book = input()
 print("Searching...")
@@ -39,6 +62,8 @@ soup = BeautifulSoup(source.text, 'lxml')
 table = soup.find("table", class_="c")
 tableRow = table.find_all("tr")
 pageList = []
+downloadLinksRef = []
+fileNameRef = []
 del tableRow[0]
 if (len(tableRow)>1):
     for tr in range(len(tableRow)):
@@ -46,9 +71,10 @@ if (len(tableRow)>1):
         bookId = tableContent[0].text
         title = tableContent[2].find("a", id=bookId).text
         title = titleFilter(title)
+        fileNameRef.append(title)
         author = tableContent[1].text.strip()
         link = tableContent[9].find("a")["href"]
-        #link = dlLinkGrabber(link)
+        downloadLinksRef.append(link)
         size = tableContent[7].text.strip()
         fileType = tableContent[8].text.strip()
         lang = tableContent[6].text.strip()
@@ -71,6 +97,17 @@ if (len(tableRow)>1):
             print("n - next")
             print("q - quit")
             opt = input("--> ")
+            if opt in ["D", "d", "download"]:
+                num = int(input("Enter book no.-> "))
+                try:
+                    linkGen = downloadLinksRef[num-1]
+                except Exception as e:
+                    print("Please enter a valid number!")
+                else:
+                    print("Please wait...")
+                    linkGen = dlLinkGrabber(linkGen)
+                    downloader(linkGen, fileNameRef[num-1])
+                    exit()
             if opt in ["N", "n", "next"]:
                 clear()
                 page += 1
