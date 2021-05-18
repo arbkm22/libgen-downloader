@@ -13,6 +13,14 @@ def titleFilter(title):
             break
     return " ".join(title)
 
+# Download link grabber
+def dlLinkGrabber(link):
+    dlSource = requests.get(link)
+    dlSoup = BeautifulSoup(dlSource.text, "lxml")
+    dlSource = dlSoup.find("div", id="download")
+    dlLink = dlSource.find("a")["href"]
+    return dlLink
+
 print("Enter the name of the book: ", end='')
 book = input()
 print("Searching...")
@@ -32,6 +40,7 @@ if (len(tableRow)>1):
         title = titleFilter(title)
         author = tableContent[1].text.strip()
         link = tableContent[9].find("a")["href"]
+        link = dlLinkGrabber(link)
         size = tableContent[7].text.strip()
         fileType = tableContent[8].text.strip()
         lang = tableContent[6].text.strip()
