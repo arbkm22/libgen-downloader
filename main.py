@@ -6,11 +6,12 @@ import os, sys
 from tqdm import tqdm
 from pathlib import Path
 
+# Self-explanatory
 def clear():
-    if name == "nt":
+    if name == "nt": # For windows
         _ = system('cls')
-    else:
-        _ = system('clear')
+    else: 
+        _ = system('clear') # For Linux/MacOS
 
 # Title filter, removes the ISBN no. from title
 def titleFilter(title):
@@ -32,6 +33,7 @@ def dlLinkGrabber(link):
     return dlLink
 
 def downloader(link, fileName):
+    print(f"Downloading book {fileName}")
     homePath = Path.home()
     subPath = "tmp"
     fileSize = int(requests.head(link).headers["Content-Length"])
