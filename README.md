@@ -1,11 +1,11 @@
 # Libgen Downloader
 
 ## Requirements 
-...
+```
 Python >= 3.7
 Git 
 VirtualEnv
-...
+```
 
 ## Setup
 
